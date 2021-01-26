@@ -30,16 +30,54 @@ def readSelectedCryptoCurrencies():
     return result
 
 
+def clearCanvas():
+    canvas_list = scrollable_frame.grid_slaves()
+    for l in canvas_list:
+        l.destroy()
+
+
+def populateWithButtons():
+    rows = 9
+    columns = 5
+    buttons = [[Button() for j in range(columns)] for i in range(rows)]
+    for i in range(0, rows):
+        for j in range(0, columns):
+            buttons[i][j] = Button(
+                scrollable_frame, text=("%d,%d" % (i+1, j+1)))
+            buttons[i][j].grid(row=i, column=j, sticky='news')
+
+
+def addRowInfo(row, name, price, hourChange, dayChange, weekChange, marketCap):
+    nameCol = Label(scrollable_frame, text=name)
+    nameCol.grid(row=row, column=0)
+
+    priceCol = Label(scrollable_frame, text=price)
+    priceCol.grid(row=row, column=1)
+
+    hourChangeCol = Label(scrollable_frame, text=hourChange)
+    hourChangeCol.grid(row=row, column=2)
+
+    dayChangeCol = Label(scrollable_frame, text=dayChange)
+    dayChangeCol.grid(row=row, column=3)
+
+    weekChangeCol = Label(scrollable_frame, text=weekChange)
+    weekChangeCol.grid(row=row, column=4)
+
+    marketCapCol = Label(scrollable_frame, text=marketCap)
+    marketCapCol.grid(row=row, column=5)
+    pass
+
+
 def showPrices():
     list_of_coins = readSelectedCryptoCurrencies()
-    lowerListbox.delete(0, lowerListbox.size())
-    for line in list_of_coins:
-        lowerListbox.insert("end", "" + str(line) + " is: " + str(666))
+    clearCanvas()
+    for num, coin in enumerate(list_of_coins):
+        addRowInfo(num, coin, "price", "hourChange",
+                   "dayChange", "weekChange", "marketCap")
 
 
 startingHeight = 600
 startingWidth = 400
-
 
 root = Tk()
 
@@ -77,12 +115,24 @@ showPricesBtn.place(relx=0.05, rely=0.35, relheight=0.1, relwidth=0.15)
 lowerFrame = Frame(app, bg="#89cff0")
 lowerFrame.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
 
-lowerListbox = Listbox(lowerFrame)
-lowerListbox.place(relwidth=1, relheight=1)
+lowerCanvas = Canvas(lowerFrame)
+lowerCanvas.pack(side="left", fill="both", expand=True)
 
-lowerScrl = Scrollbar(lowerFrame)
+lowerScrl = Scrollbar(lowerFrame, orient="vertical", command=lowerCanvas.yview)
+
+scrollable_frame = Frame(lowerCanvas)
+
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: lowerCanvas.configure(
+        scrollregion=lowerCanvas.bbox("all")
+    )
+)
+
+lowerCanvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+lowerCanvas.configure(yscrollcommand=lowerScrl.set)
+
 lowerScrl.pack(side="right", fill="y")
-lowerScrl.config(command=lowerListbox.yview)
 
 
 root.mainloop()
