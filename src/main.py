@@ -47,33 +47,52 @@ def populateWithButtons():
             buttons[i][j].grid(row=i, column=j, sticky='news')
 
 
-def addRowInfo(row, name, price, hourChange, dayChange, weekChange, marketCap):
+def getCoinResponse(name):
+    response = requests.get(
+        "https://api.coingecko.com/api/v3/coins/"+name)
+    print("response taken!")
+    return response.json()
+
+
+def addRowInfo(row, name, abr, price, hourChange, dayChange, weekChange, marketCap):
     nameCol = Label(scrollable_frame, text=name)
-    nameCol.grid(row=row, column=0)
+    nameCol.grid(row=row, column=0, sticky="EW")
+
+    abrCol = Label(scrollable_frame, text=abr)
+    abrCol.grid(row=row, column=1, sticky="EW")
 
     priceCol = Label(scrollable_frame, text=price)
-    priceCol.grid(row=row, column=1)
+    priceCol.grid(row=row, column=2, sticky="EW")
 
     hourChangeCol = Label(scrollable_frame, text=hourChange)
-    hourChangeCol.grid(row=row, column=2)
+    hourChangeCol.grid(row=row, column=3, sticky="EW")
 
     dayChangeCol = Label(scrollable_frame, text=dayChange)
-    dayChangeCol.grid(row=row, column=3)
+    dayChangeCol.grid(row=row, column=4, sticky="EW")
 
     weekChangeCol = Label(scrollable_frame, text=weekChange)
-    weekChangeCol.grid(row=row, column=4)
+    weekChangeCol.grid(row=row, column=5, sticky="EW")
 
     marketCapCol = Label(scrollable_frame, text=marketCap)
-    marketCapCol.grid(row=row, column=5)
+    marketCapCol.grid(row=row, column=6, sticky="EW")
     pass
 
 
 def showPrices():
     list_of_coins = readSelectedCryptoCurrencies()
     clearCanvas()
-    for num, coin in enumerate(list_of_coins):
-        addRowInfo(num, coin, "price", "hourChange",
-                   "dayChange", "weekChange", "marketCap")
+    addRowInfo(0, "CryptoCurrency", "Abbreviation", "Price", "1h change",
+               "24h change", "7d change", "market cap")
+    for num, coin in enumerate(list_of_coins, 1):
+        response = getCoinResponse(coin)
+        addRowInfo(num, coin, "abr",
+                   response["market_data"]["current_price"]["usd"],
+                   response["market_data"]["price_change_percentage_1h_in_currency"]["usd"],
+                   response["market_data"]["price_change_percentage_24h_in_currency"]["usd"],
+                   response["market_data"]["price_change_percentage_7d_in_currency"]["usd"],
+                   response["market_data"]["market_cap"]["usd"])
+    for x in range(7):
+        scrollable_frame.columnconfigure(x, weight=1)
 
 
 startingHeight = 600
@@ -119,9 +138,9 @@ lowerCanvas = Canvas(lowerFrame)
 lowerCanvas.pack(side="left", fill="both", expand=True)
 
 lowerScrl = Scrollbar(lowerFrame, orient="vertical", command=lowerCanvas.yview)
+lowerScrl.pack(side="right", fill="y")
 
 scrollable_frame = Frame(lowerCanvas)
-
 scrollable_frame.bind(
     "<Configure>",
     lambda e: lowerCanvas.configure(
@@ -131,8 +150,6 @@ scrollable_frame.bind(
 
 lowerCanvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 lowerCanvas.configure(yscrollcommand=lowerScrl.set)
-
-lowerScrl.pack(side="right", fill="y")
 
 
 root.mainloop()
