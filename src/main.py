@@ -1,27 +1,26 @@
-from tkinter import *
+from tkinter import Label, Button, Frame, Canvas, Scrollbar, Tk, messagebox
 import requests
 
 
-def pingCoinGecko():
+def ping_coin_gecko():
     response = requests.get("https://api.coingecko.com/api/v3/ping")
     if response.status_code == 200:
-        pingBox.configure(text="200 - Coin Gecko works")
+        ping_box.configure(text="200 - Coin Gecko works")
     else:
-        pingBox.configure(text="error, there might be a problem")
+        ping_box.configure(text="error, there might be a problem")
 
 
-def pokus2():
+def printID():
     response = requests.get("https://api.coingecko.com/api/v3/coins/list")
-    file = open("all_crypto_currencies.txt", "w")
+    file = open("crypto_all.txt", "w")
     for coin in response.json():
         file.write(coin["id"] + "\n")
     file.close()
-    print("hotovo")
 
 
-def readSelectedCryptoCurrencies():
+def read_selected_crypto():
     result = []
-    file = open("selected_crypto_currencies.txt", "r")
+    file = open("crypto_selected.txt", "r")
     for coin in file.readlines():
         if coin[-1] == '\n':
             coin = coin[:-1]
@@ -30,126 +29,125 @@ def readSelectedCryptoCurrencies():
     return result
 
 
-def clearCanvas():
+def clear_canvas():
     canvas_list = scrollable_frame.grid_slaves()
     for l in canvas_list:
         l.destroy()
 
 
-def populateWithButtons():
-    rows = 9
-    columns = 5
-    buttons = [[Button() for j in range(columns)] for i in range(rows)]
-    for i in range(0, rows):
-        for j in range(0, columns):
-            buttons[i][j] = Button(
-                scrollable_frame, text=("%d,%d" % (i+1, j+1)))
-            buttons[i][j].grid(row=i, column=j, sticky='news')
-
-
-def getCoinResponse(name):
+def get_coin_response(name):
     response = requests.get(
         "https://api.coingecko.com/api/v3/coins/"+name)
-    print("response taken!")
     return response.json()
 
 
-def addRowInfo(row, name, abr, price, hourChange, dayChange, weekChange, marketCap):
+def add_row(row, name, abr, price, hour_change, day_change, week_change, market_cap):
     nameCol = Label(scrollable_frame, text=name)
     nameCol.grid(row=row, column=0, sticky="EW")
 
-    abrCol = Label(scrollable_frame, text=abr)
-    abrCol.grid(row=row, column=1, sticky="EW")
+    abr_col = Label(scrollable_frame, text=abr)
+    abr_col.grid(row=row, column=1, sticky="EW")
 
-    priceCol = Label(scrollable_frame, text=price)
-    priceCol.grid(row=row, column=2, sticky="EW")
+    price_col = Label(scrollable_frame, text=price)
+    price_col.grid(row=row, column=2, sticky="EW")
 
-    hourChangeCol = Label(scrollable_frame, text=hourChange)
-    hourChangeCol.grid(row=row, column=3, sticky="EW")
+    hour_change_col = Label(scrollable_frame, text=hour_change)
+    hour_change_col.grid(row=row, column=3, sticky="EW")
 
-    dayChangeCol = Label(scrollable_frame, text=dayChange)
-    dayChangeCol.grid(row=row, column=4, sticky="EW")
+    day_change_col = Label(scrollable_frame, text=day_change)
+    day_change_col.grid(row=row, column=4, sticky="EW")
 
-    weekChangeCol = Label(scrollable_frame, text=weekChange)
-    weekChangeCol.grid(row=row, column=5, sticky="EW")
+    week_change_col = Label(scrollable_frame, text=week_change)
+    week_change_col.grid(row=row, column=5, sticky="EW")
 
-    marketCapCol = Label(scrollable_frame, text=marketCap)
-    marketCapCol.grid(row=row, column=6, sticky="EW")
-    pass
+    market_cap_col = Label(scrollable_frame, text=market_cap)
+    market_cap_col.grid(row=row, column=6, sticky="EW")
 
 
-def showPrices():
-    list_of_coins = readSelectedCryptoCurrencies()
-    clearCanvas()
-    addRowInfo(0, "CryptoCurrency", "Abbreviation", "Price", "1h change",
+def show_prices():
+    list_of_coins = read_selected_crypto()
+    clear_canvas()
+    add_row(0, "CryptoCurrency", "Abbreviation", "Price", "1h change",
                "24h change", "7d change", "market cap")
     for num, coin in enumerate(list_of_coins, 1):
-        response = getCoinResponse(coin)
-        addRowInfo(num, coin, "abr",
-                   response["market_data"]["current_price"]["usd"],
-                   response["market_data"]["price_change_percentage_1h_in_currency"]["usd"],
-                   response["market_data"]["price_change_percentage_24h_in_currency"]["usd"],
-                   response["market_data"]["price_change_percentage_7d_in_currency"]["usd"],
-                   response["market_data"]["market_cap"]["usd"])
+        response = get_coin_response(coin)
+        add_row(num, coin, "abr",
+                response["market_data"]["current_price"]["usd"],
+                response["market_data"]["price_change_percentage_1h_in_currency"]["usd"],
+                response["market_data"]["price_change_percentage_24h_in_currency"]["usd"],
+                response["market_data"]["price_change_percentage_7d_in_currency"]["usd"],
+                response["market_data"]["market_cap"]["usd"])
     for x in range(7):
         scrollable_frame.columnconfigure(x, weight=1)
 
 
-startingHeight = 600
-startingWidth = 400
+def how_to():
+    text = "To add a crypto currency you need to add it's ID into crypto_selected.txt. The print ID's button adds all of the available crypto currencies into crypto_all.txt. Find the ID of the crypto you want to add in crypto_all.txt then add a new line with the ID into crypto_selected.txt"
+    messagebox.showinfo("Instructions", text)
+
+
+starting_height = 600
+starting_width = 400
 
 root = Tk()
 
-root.minsize(startingHeight, startingWidth)
+root.minsize(starting_height, starting_width)
 root.wm_title("Crypto currency checker")
 root.configure(bg="#00FFFF")
 
-coinGeckoLabel = Label(
+coin_gecko_label = Label(
     root, text="Data is from the Coin Gecko API.", bg="#00FFFF")
-coinGeckoLabel.place(relx=0.70, rely=0.95, relheight=0.05, relwidth=0.30)
+coin_gecko_label.place(relx=0.70, rely=0.95, relheight=0.05, relwidth=0.30)
 
 
 app = Frame(root)
 app.place(relx=0.05, rely=0.05, relheight=0.9, relwidth=0.9)
 
 
-exitButton = Button(app, text="exit", command=root.destroy)
-exitButton.place(relx=0.05, rely=0.05, relheight=0.1, relwidth=0.1)
+exit_button = Button(app, text="exit", command=root.destroy)
+exit_button.place(relx=0.05, rely=0.05, relheight=0.1, relwidth=0.12)
 
-minimizeButton = Button(app, text="minimize", command=root.destroy)
-minimizeButton.place(relx=0.2, rely=0.05, relheight=0.1, relwidth=0.1)
+minimize_button = Button(app, text="mini.", command=root.iconify)
+minimize_button.place(relx=0.2, rely=0.05, relheight=0.1, relwidth=0.08)
 
-pingButton = Button(app, text="ping", command=pingCoinGecko)
-pingButton.place(relx=0.35, rely=0.05, relheight=0.1, relwidth=0.1)
+ping_button = Button(app, text="ping", command=ping_coin_gecko)
+ping_button.place(relx=0.35, rely=0.05, relheight=0.1, relwidth=0.1)
 
-pingBox = Label(app, anchor="w", justify="left", text="-output-")
-pingBox.place(relx=0.5, rely=0.05, relheight=0.1, relwidth=0.5)
+ping_box = Label(app, anchor="w", justify="left", text="-output-")
+ping_box.place(relx=0.5, rely=0.05, relheight=0.1, relwidth=0.5)
 
-pokusButton2 = Button(app, text="coin ID's", command=pokus2)
-pokusButton2.place(relx=0.85, rely=0.35, relheight=0.1, relwidth=0.1)
+how_to_button = Button(app, text="how to add crypto", command=how_to)
+how_to_button.place(relx=0.05, rely=0.20, relheight=0.1, relwidth=0.25)
 
-showPricesBtn = Button(app, text="show prices", command=showPrices)
-showPricesBtn.place(relx=0.05, rely=0.35, relheight=0.1, relwidth=0.15)
+print_button = Button(app, text="print IDs", command=printID)
+print_button.place(relx=0.85, rely=0.35, relheight=0.1, relwidth=0.1)
 
-lowerFrame = Frame(app, bg="#89cff0")
-lowerFrame.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
+show_price_button = Button(app, text="show prices", command=show_prices)
+show_price_button.place(relx=0.05, rely=0.35, relheight=0.1, relwidth=0.15)
 
-lowerCanvas = Canvas(lowerFrame)
-lowerCanvas.pack(side="left", fill="both", expand=True)
+lower_frame = Frame(app, bg="#89cff0")
+lower_frame.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
 
-lowerScrl = Scrollbar(lowerFrame, orient="vertical", command=lowerCanvas.yview)
-lowerScrl.pack(side="right", fill="y")
+lower_canvas = Canvas(lower_frame)
+lower_canvas.pack(side="left", fill="both", expand=True)
 
-scrollable_frame = Frame(lowerCanvas)
+lower_scrl = Scrollbar(lower_frame, orient="vertical",
+                       command=lower_canvas.yview)
+lower_scrl.pack(side="right", fill="y")
+
+scrollable_frame = Frame(lower_canvas)
 scrollable_frame.bind(
     "<Configure>",
-    lambda e: lowerCanvas.configure(
-        scrollregion=lowerCanvas.bbox("all")
+    lambda e: lower_canvas.configure(
+        scrollregion=lower_canvas.bbox("all")
     )
 )
 
-lowerCanvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-lowerCanvas.configure(yscrollcommand=lowerScrl.set)
+lower_canvas.create_window(
+    (0, 0), window=scrollable_frame, anchor="nw", tags="frame")
+lower_canvas.bind("<Configure>", lambda e: lower_canvas.itemconfig(
+    "frame", width=lower_canvas.winfo_width()))
+lower_canvas.configure(yscrollcommand=lower_scrl.set)
 
 
 root.mainloop()

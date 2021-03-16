@@ -1,0 +1,8 @@
+bitcoin
+ethereum
+ripple
+bitcoin-cash
+cardano
+litecoin
+stellar
+iota
